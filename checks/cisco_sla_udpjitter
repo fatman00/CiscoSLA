@@ -1,0 +1,118 @@
+#!/usr/bin/python
+# -*- encoding: utf-8; py-indent-offset: 4 -*-
+#
+# Copyright 2012 Ralf Ertzinger
+#
+###############################################################################
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###############################################################################
+
+###############################################################################
+# Author: Ralf Ertzinger (re at addix.net)
+# Refitted by: Rasmus E
+###############################################################################
+
+# Example Agent Output:
+
+def cisco_sla_rtt_sense(st):
+    names = {   '0'     :      'Other',
+                '1'     :      'OK',
+                '2'     :      'Disconnected',
+                '3'     :      'Over Threshold',
+                '4'     :      'Time Out',
+                '5'     :      'Busy',
+                '6'     :      'Not Connected',
+                '7'     :      'Dropped',
+                '8'     :      'Sequence Error',
+                '9'     :      'Verify Error',
+                '10'    :      'Application Specific',
+                '11'    :      'DNS Server Time Out',
+                '12'    :      'TCP Connect Time Out',
+                '13'    :      'HTTP Transaction Time Out',
+                '14'    :      'DNS Query Error',
+                '15'    :      'HTTP Error',
+                '16'    :      'Error'}
+    return names.get(st, st) 
+
+def cisco_sla_rtt_type(st):
+    names = {   '1'     :      'echo',
+                '2'     :      'pathEcho',
+                '3'     :      'fileIO',
+                '4'     :      'script',
+                '5'     :      'udpEcho',
+                '6'     :      'tcpConnect',
+                '7'     :      'http',
+                '8'     :      'dns',
+                '9'     :      'udp-jitter',
+                '10'    :      'dlsw',
+                '11'    :      'dhcp',
+                '12'    :      'ftp',
+                '16'    :      'icmp-jitter'}
+    return names.get(st,st)
+
+
+def cisco_sla_decode_ip(ip):
+    return ".".join([ "%d" % (c) for c in [ ord(i) for i in ip ]])
+
+def inventory_cisco_sla_udpjitter(checkname, info):
+    inv = []
+
+    for index, opersense, admintag, comptime, type, codectype, targetip, targetvrf, thres, latsd, latds in info:
+        # Only inventory checks of type "echo" for now
+        if type == '9':
+            inv.append((index, None))
+
+    return inv
+
+def check_cisco_sla_udpjitter(item, _no_params, info):
+
+    for index, opersense, admintag, comptime, type, codectype, targetip, targetvrf, thres, latsd, latds in info:
+        if item == index:
+            comptime = saveint(comptime)
+            thres = saveint(thres)
+            targetip = cisco_sla_decode_ip(targetip)
+# Der er noget i det her der ikke virker
+            perf = [("UDP RTT", comptime, "", thres), ("Latency SD", latsd, "", thres), ("Latency DS", latds, "", thres)]
+#            perf = ("UDP RTT", comptime, "", thres)
+
+            severity = "OK"
+            returncode = 0
+
+            output = "%s (%s probe to %s in VRF %s), status %s, RTT=%d ms, Latency SD=%d ms, DS=%d ms (threshold %d ms)" % (admintag, cisco_sla_rtt_type(type), targetip, targetvrf, cisco_sla_rtt_sense(opersense), comptime, int(latsd), int(latds), thres)
+
+            if opersense != '1':
+                returncode = 2
+                severity = "CRITICAL"
+
+            return (returncode, '%s - %s' % (severity, output), perf)
+
+    return (3, "UNKNOWN - item not found in snmp data")
+
+check_info['cisco_sla_udpjitter'] = (check_cisco_sla_udpjitter, "SLA monitor %s", 1,  inventory_cisco_sla_udpjitter)
+snmp_info['cisco_sla_udpjitter'] = ( ".1.3.6.1.4.1.9.9.42.1", [
+            OID_END,
+            '2.10.1.2',     # RttOperSense
+            '2.1.1.3',      # AdminTag
+            '2.10.1.1',     # LatestRttOperCompletionTime
+            '2.1.1.4',      # CtrlAdminRttType
+            '2.2.1.27',     # EchoAdminCodecType
+            '2.2.1.2',      # Target IP Address
+            '2.2.1.26',     # Target VRF
+            '2.1.1.5',      # Threshold
+            '5.2.1.49',     # avg_latency_SD
+            '5.2.1.50',     # avg_latency_DS
+            ])
+
+snmp_scan_functions['cisco_sla_udpjitter'] = \
+    lambda oid: oid(".1.3.6.1.4.1.9.9.42.1.*") != None

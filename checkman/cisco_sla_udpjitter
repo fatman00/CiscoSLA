@@ -1,0 +1,20 @@
+title: Check IP SLA instances on Cisco devices
+agents: snmp
+catalog: hw/network/cisco
+author: Ralf Ertzinger <re at addix.net> & Rasmus E
+license: GPL
+distribution: addon
+description:
+ This check monitors IP SLA monitoring instances on Cisco
+ devices. Currently only SLA instances of type udp-jitter
+ are supported.
+
+ Depending on the state of the SLA monitor the checks can
+ be {OK}, {CRIT} or {UNKNOWN}.
+
+item:
+ The IP SLA id as configured on the Cisco device
+
+inventory:
+ One check for each configured SLA of type udp-jitter is created
+ by the inventory. And graphs are drawn for RTT, Source-Destination & Destination-Source Latency
