@@ -39,4 +39,21 @@ $def[2] .= "GPRINT:ds:MAX:\"%3.3lg ms MAX \" ";
 $def[2] .= "GPRINT:ds:AVERAGE:\"%3.3lg ms AVERAGE \" ";
 
 }
+if (isset($RRDFILE[4])) {
+//if ( 0 ) {
+
+
+$opt[3] = "-X0 --vertical-label \"Mean Openion Score (dMOS)\"  --title \"$hostname / $desc / MOS\" ";
+
+$def[3] = "DEF:var3=$RRDFILE[2]:$DS[1]:MAX ";
+$def[3] .= "CDEF:mos=var2,1,* ";
+$def[3] .= "AREA:mos#20dd30:\"MOS in deciMOS \" "
+$def[3] .= "LINE1:mos#000000:\"\" ";
+$def[3] .= "GPRINT:mos:LAST:\"%3.3lg ms LAST \" ";
+$def[3] .= "GPRINT:mos:MAX:\"%3.3lg ms MAX \" ";
+$def[3] .= "GPRINT:mos:AVERAGE:\"%3.3lg ms AVERAGE \" ";
+
+
+}
+
 ?>
