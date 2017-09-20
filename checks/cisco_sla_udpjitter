@@ -68,8 +68,9 @@ def cisco_sla_decode_ip(ip):
 
 def inventory_cisco_sla_udpjitter(checkname, info):
     inv = []
+#    print info
 
-    for index, opersense, admintag, comptime, type, codectype, targetip, targetvrf, thres, latsd, latds in info[0]:
+    for index, opersense, admintag, comptime, type, codectype, targetip, targetvrf, thres, latsd, latds in info:
         # Only inventory checks of type "echo" for now
         if type == '9':
             inv.append((index, None))
@@ -78,7 +79,7 @@ def inventory_cisco_sla_udpjitter(checkname, info):
 
 def check_cisco_sla_udpjitter(item, _no_params, info):
 
-    for index, opersense, admintag, comptime, type, codectype, targetip, targetvrf, thres, latsd, latds in info[0]:
+    for index, opersense, admintag, comptime, type, codectype, targetip, targetvrf, thres, latsd, latds in info:
         if item == index:
             comptime = saveint(comptime)
             thres = saveint(thres)
