@@ -87,7 +87,7 @@ def check_cisco_sla_udpjitter(item, _no_params, info):
             thres = saveint(thres)
             #targetip = cisco_sla_decode_ip(targetip)
 # Der er noget i det her der ikke virker
-            perf = [("UDP RTT", comptime, "", thres), ("Latency SD", latsd, "", thres), ("Latency DS", latds, "", thres), ("Jitter SD", jitsd, "", thres), ("Jitter SD", jitsd, "", thres), ("MOS", jitmos, "", thres)]
+            perf = [("UDP RTT", comptime, "", thres), ("Latency SD", latsd, "", thres), ("Latency DS", latds, "", thres), ("Jitter SD", jitsd, "", thres), ("Jitter SD", jitsd, "", thres), ("MOS", jitmos, "", 500)]
 #            perf = ("UDP RTT", comptime, "", thres)
 
             severity = "OK"

@@ -40,19 +40,42 @@ $def[2] .= "GPRINT:ds:AVERAGE:\"%3.3lg ms AVERAGE \" ";
 
 }
 
+if (isset($RRDFILE[4]) && isset($RRDFILE[5])) {
+
+$opt[3] = "-X0 --vertical-label \"Jitter Time (ms)\"  --title \"$hostname / $desc / OneWay\" ";
+
+$def[3] = "DEF:var4=$RRDFILE[4]:$DS[1]:MAX ";
+$def[3] .= "CDEF:jitsd=var4,1,* ";
+$def[3] .= "LINE1:jitsd#d020a0:\"Source->Destination Jitter\" ";
+$def[3] .= "GPRINT:jitsd:LAST:\"%3.3lg ms LAST \" ";
+$def[3] .= "GPRINT:jitsd:MAX:\"%3.3lg ms MAX \" ";
+$def[3] .= "GPRINT:jitsd:AVERAGE:\"%3.3lg ms AVERAGE \" ";
+
+
+$def[3] .= "DEF:var5=$RRDFILE[5]:$DS[1]:MAX ";
+$def[3] .= "CDEF:jitds=var5,1,* ";
+$def[3] .= "LINE1:jitds#d08400:\"Destination->Source Jitter\" ";
+$def[3] .= "GPRINT:jitds:LAST:\"%3.3lg ms LAST \" ";
+$def[3] .= "GPRINT:jitds:MAX:\"%3.3lg ms MAX \" ";
+$def[3] .= "GPRINT:jitds:AVERAGE:\"%3.3lg ms AVERAGE \" ";
+
+}
+
+
 if (isset($RRDFILE[6])) {
 //if ( 0 ) {
 
 
-$opt[3] = "-X0 --vertical-label \"deciMOS\"  --title \"$hostname / $desc / Mean Openion Score\" ";
+$opt[4] = "-X0 --vertical-label \"deciMOS\"  --title \"$hostname / $desc / Mean Openion Score\" ";
 
-$def[3] = "DEF:var6=$RRDFILE[6]:$DS[1]:MAX ";
-$def[3] .= "CDEF:mos=var6,1,* ";
-$def[3] .= "AREA:mos#20dd30:\"MOS in deciMOS \" ";
-$def[3] .= "LINE1:mos#000000:\"\" ";
-$def[3] .= "GPRINT:mos:LAST:\"%3.3lg ms LAST \" ";
-$def[3] .= "GPRINT:mos:MAX:\"%3.3lg ms MAX \" ";
-$def[3] .= "GPRINT:mos:AVERAGE:\"%3.3lg ms AVERAGE \" ";
+$def[4] = "DEF:var6=$RRDFILE[6]:$DS[1]:MAX ";
+$def[4] .= "CDEF:mos=var6,1,* ";
+$def[4] .= "AREA:mos#20dd30:\"MOS in deciMOS \" ";
+$def[4] .= "LINE1:mos#000000:\"\" ";
+$def[4] .= "GPRINT:mos:LAST:\"%3.3lg ms LAST \" ";
+$def[4] .= "GPRINT:mos:MIN:\"%3.3lg ms MIN \" ";
+$def[4] .= "GPRINT:mos:MAX:\"%3.3lg ms MAX \" ";
+$def[4] .= "GPRINT:mos:AVERAGE:\"%3.3lg ms AVERAGE \" ";
 
 
 }
