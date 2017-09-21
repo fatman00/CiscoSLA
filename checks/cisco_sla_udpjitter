@@ -80,19 +80,22 @@ def inventory_cisco_sla_udpjitter(checkname, info):
 
 def check_cisco_sla_udpjitter(item, _no_params, info):
 
-    for index, opersense, admintag, comptime, type, codectype, targetip, thres, latsd, latds in info[0]:
+#    for index, opersense, admintag, comptime, type, codectype, targetip, thres, latsd, latds in info[0]:
+    for index, opersense, comptime, thres, type, latsd, latds, jitsd, jitds, jitmos in info[1]:
         if item == index:
             comptime = saveint(comptime)
             thres = saveint(thres)
-            targetip = cisco_sla_decode_ip(targetip)
+            #targetip = cisco_sla_decode_ip(targetip)
 # Der er noget i det her der ikke virker
-            perf = [("UDP RTT", comptime, "", thres), ("Latency SD", latsd, "", thres), ("Latency DS", latds, "", thres)]
+            perf = [("UDP RTT", comptime, "", thres), ("Latency SD", latsd, "", thres), ("Latency DS", latds, "", thres), ("Jitter SD", jitsd, "", thres), ("Jitter SD", jitsd, "", thres), ("MOS", jitmos, "", thres)]
 #            perf = ("UDP RTT", comptime, "", thres)
 
             severity = "OK"
             returncode = 0
 
-            output = "%s (%s probe to %s in VRF None), status %s, RTT=%d ms, Latency SD=%d ms, DS=%d ms (threshold %d ms)" % (admintag, cisco_sla_rtt_type(type), targetip, cisco_sla_rtt_sense(opersense), comptime, int(latsd), int(latds), thres)
+            output = "(%s), status %s, RTT=%d, Latency SD=%d ms, DS=%d ms, Jitter SD=%d, DS=%d, deciMOS=%d (threshold %d ms)" % (cisco_sla_rtt_type(type), cisco_sla_rtt_sense(opersense), comptime, int(latsd), int(latds), int(jitsd), int(jitds), (int(jitmos)), thres)
+#            output = "(%s), status %s, RTT=%d, Latency SD=%d ms, DS=%d ms, Jitter SD=%d, DS=%D, MOS=%D (threshold %d ms)" % (cisco_sla_rtt_type(type), cisco_sla_rtt_sense(opersense), comptime, int(latsd), int(latds), thres)
+#          (cisco_sla_rtt_type(type), targetip, cisco_sla_rtt_sense(opersense), comptime, int(latsd), int(latds), thres)
             if opersense != '1':
                 returncode = 2
                 severity = "CRITICAL"
@@ -102,7 +105,7 @@ def check_cisco_sla_udpjitter(item, _no_params, info):
     return (3, "UNKNOWN - item not found in snmp data")
 
 check_info['cisco_sla_udpjitter'] = (check_cisco_sla_udpjitter, "SLA monitor %s", 1,  inventory_cisco_sla_udpjitter)
-snmp_info['cisco_sla_udpjitter'] = [(".1.3.6.1.4.1.9.9.42.1", [
+snmp_info['cisco_sla_udpjitter'] = [ (".1.3.6.1.4.1.9.9.42.1", [
     OID_END,
     "2.10.1.2", # RttOperSense
     "2.1.1.3", #AdminTag
@@ -115,12 +118,15 @@ snmp_info['cisco_sla_udpjitter'] = [(".1.3.6.1.4.1.9.9.42.1", [
     "5.2.1.50", #avg_latency_DS
 ]), (".1.3.6.1.4.1.9.9.42.1", [
     OID_END,
-    "2.2.1.5", #
-    "2.5.2.1.49",
-    "2.5.2.1.50",
-    "2.5.2.1.47",
-    "2.5.2.1.48",
-    "2.5.2.1.42",
+    "2.10.1.2", # RttOperSense
+    "2.10.1.1", #LatestRttOperCompletionTime
+    "2.2.1.5", #thres
+    "2.1.1.4", #CtrlAdminRttType
+    "5.2.1.49", #lat_SD
+    "5.2.1.50", #lat_DS
+    "5.2.1.47", #jit_SD
+    "5.2.1.48", #jit_DS
+    "5.2.1.42", #jit_MOS
 ])]
 
 #elif "46" == rtt_info_type:
